@@ -1,0 +1,59 @@
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: spendwise-db-dev
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: spendwise
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d spendwise"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Simple Database GUI
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8080:8080"
+
+  api:
+    build:
+      context: .
+      dockerfile: ./apps/api/Dockerfile.dev
+    container_name: spendwise-api-dev
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://user:password@db:5432/spendwise?schema=public"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+
+  mobile-web:
+    build:
+      context: .
+      dockerfile: ./apps/mobile-web/Dockerfile.dev
+    container_name: spendwise-frontend-dev
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: "http://localhost:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - api
+
+volumes:
+  postgres_data_dev:
