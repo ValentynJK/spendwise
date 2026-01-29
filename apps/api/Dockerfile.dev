@@ -1,14 +1,23 @@
 FROM node:20-alpine
 WORKDIR /app
 
-# Copy all package files from root and all workspaces
+# Copy root package files
 COPY package*.json ./
-COPY apps/api/package.json ./apps/api/
-COPY apps/mobile-web/package.json ./apps/mobile-web/
-COPY packages/*/package.json ./packages/*/
 
-# Install all workspace dependencies
-RUN npm install --legacy-peer-deps
+# Copy only the packages that API depends on
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/typescript-config/package.json ./packages/typescript-config/
+COPY packages/eslint-config/package.json ./packages/eslint-config/
+
+# Copy API package.json
+COPY apps/api/package.json ./apps/api/
+
+# Install dependencies
+RUN npm install
+
+# Copy shared package source code (needed at runtime)
+COPY packages/shared ./packages/shared
+COPY packages/typescript-config ./packages/typescript-config
 
 EXPOSE 3000
 
