@@ -1,0 +1,18 @@
+model Category {
+  id           String        @id @default(uuid())
+  name         String
+  icon         String // Lucide icon name
+  color        String // Hex code
+  // link to a User (Null if it's a Global System Template)
+  userId       String?
+  user         User?         @relation(fields: [userId], references: [id])
+  // lineage: Link to the original Global Category if this is a user-copy
+  parentId     String?
+  parent       Category?     @relation("CategoryToTemplate", fields: [parentId], references: [id])
+  children     Category[]    @relation("CategoryToTemplate")
+  // relations
+  transactions Transaction[]
+  budgets      Budget[]
+
+  @@unique([name, userId])
+}

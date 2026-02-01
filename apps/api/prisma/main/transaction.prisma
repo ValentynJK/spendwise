@@ -1,0 +1,18 @@
+model Transaction {
+  id         String          @id @default(uuid())
+  amount     Float
+  type       TransactionType @default(EXPENSE)
+  date       DateTime        @default(now())
+  note       String?
+  // Relations
+  categoryId String
+  category   Category        @relation(fields: [categoryId], references: [id])
+  userId     String
+  user       User            @relation(fields: [userId], references: [id])
+  createdAt  DateTime        @default(now())
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
